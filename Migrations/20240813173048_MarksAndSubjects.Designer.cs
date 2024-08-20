@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Won7E1.Data;
 
@@ -11,9 +12,11 @@ using Won7E1.Data;
 namespace Won7E1.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240813173048_MarksAndSubjects")]
+    partial class MarksAndSubjects
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,11 +51,11 @@ namespace Won7E1.Migrations
 
             modelBuilder.Entity("Won7E1.Models.Mark", b =>
                 {
-                    b.Property<int?>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DateAssigned")
                         .HasColumnType("datetime2");
@@ -72,7 +75,7 @@ namespace Won7E1.Migrations
 
                     b.HasIndex("SubjectId");
 
-                    b.ToTable("Marks");
+                    b.ToTable("Mark");
                 });
 
             modelBuilder.Entity("Won7E1.Models.Student", b =>
@@ -106,11 +109,11 @@ namespace Won7E1.Migrations
 
             modelBuilder.Entity("Won7E1.Models.Subject", b =>
                 {
-                    b.Property<int?>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -118,17 +121,17 @@ namespace Won7E1.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Subjects");
+                    b.ToTable("Subject");
                 });
 
             modelBuilder.Entity("Won7E1.Models.Mark", b =>
                 {
                     b.HasOne("Won7E1.Models.Student", "Student")
-                        .WithMany("Mark")
+                        .WithMany("Marks")
                         .HasForeignKey("StudentId");
 
                     b.HasOne("Won7E1.Models.Subject", "Subject")
-                        .WithMany("Mark")
+                        .WithMany("Marks")
                         .HasForeignKey("SubjectId");
 
                     b.Navigation("Student");
@@ -152,12 +155,12 @@ namespace Won7E1.Migrations
 
             modelBuilder.Entity("Won7E1.Models.Student", b =>
                 {
-                    b.Navigation("Mark");
+                    b.Navigation("Marks");
                 });
 
             modelBuilder.Entity("Won7E1.Models.Subject", b =>
                 {
-                    b.Navigation("Mark");
+                    b.Navigation("Marks");
                 });
 #pragma warning restore 612, 618
         }

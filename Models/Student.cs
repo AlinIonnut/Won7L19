@@ -11,5 +11,7 @@ namespace Won7E1.Models
         public int? AddressId { get; set; }
         [JsonIgnore]
         public Address Address {  get; set; }
+
+        public List<Mark> Mark { get; set; }
     }
 }

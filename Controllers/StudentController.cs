@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Won7E1.Data;
 using Won7E1.DTOs;
 using Won7E1.Models;
+using Won7E1.Service;
 
 namespace Won7E1.Controllers
 {
@@ -11,184 +13,120 @@ namespace Won7E1.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
-        private readonly DataContext _dbContext;
+        private readonly StudentService _studentService;
 
-        public StudentController(DataContext dbContext)
+        public StudentController(StudentService studentService)
         {
-            _dbContext = dbContext;
+            _studentService = studentService;
         }
 
-        [HttpGet]
-        public ActionResult<List<Student>> GetAllStudents()
+        [HttpGet("get-all-students")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<Student>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+        public IActionResult GetAllStudents()
         {
-            var students = _dbContext.Students.ToList();
-            if (students == null)
+            try
             {
-                return NotFound();
+                var studentsList = _studentService.GetAllStudents();
+                return Ok(studentsList);
             }
-            else
+            catch(Exception ex)
             {
-                return Ok(students);
+                return NotFound(ex.Message);
             }
         }
 
-        [HttpGet("{id}")]
-        public ActionResult<Student> GetStudentById(int id)
+        [HttpGet("get-student-by/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Student))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+        public IActionResult GetStudentById(int id)
         {
-            var student = _dbContext.Students.FirstOrDefault(s => s.Id == id);
-            if (student == null)
+            try
             {
-                return NotFound();
-            }
-            else
-            {
+                var student = _studentService.GetStudentById(id);
                 return Ok(student);
             }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+
+            }
         }
 
-        [HttpGet("{id}/address")]
-        public ActionResult<Student> GetStudentByAddress(int id)
+        [HttpGet("get-student-address-by/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+        public IActionResult GetStudentByAddress(int id)
         {
-            var student = _dbContext.Students.Include(s => s.Address).FirstOrDefault(s => s.Id == id);
-            if (student == null)
+            try
             {
-                return NotFound();
+                var address = _studentService.GetStudentByAdress(id);
+                return Ok(address);
             }
-
-            if (student.Address == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return NotFound(ex.Message);
+
             }
-
-            var addressDto = new AddressDto
-            {
-                City = student.Address.City,
-                Street = student.Address.Street,
-                Number = student.Address.Number,
-            };
-
-            return Ok(addressDto);
         }
 
-        [HttpPost]
-        public ActionResult<Student> CreateStudentWithoutAdress([FromBody] StudentWithoutAddressDto request)
+        [HttpPost("create-student-without-address")]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Student))]
+        public IActionResult CreateStudentWithoutAdress([FromBody] StudentWithoutAddressDto request)
         {
-            var newStudent = new Student
-            {
-                Name = request.Name,
-                FirstName = request.FirstName,
-                Age = request.Age,
-            };
-
-            _dbContext.Students.Add(newStudent);
-            _dbContext.SaveChanges();
-
-            return Ok(newStudent);
+            var student = _studentService.CreateStudentWithoutAdress(request);
+            return CreatedAtAction(nameof(GetStudentById), new { id = student.Id }, student);
         }
 
-        [HttpPut("{id}")]
-        public ActionResult<Student> UpdateStudent(int id,[FromBody] StudentWithoutAddressDto request)
+        [HttpPut("update-student/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Student))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+        public IActionResult UpdateStudent(int id,[FromBody] StudentWithoutAddressDto request)
         {
-            var student = _dbContext.Students.FirstOrDefault( s => s.Id == id);
-            if (student == null)
+            try
             {
-                return NotFound();
+                var student = _studentService.UpdateStudent(id, request);
+                return Ok(student);
             }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
 
-            student.Name = request.Name;
-            student.FirstName = request.FirstName;
-            student.Age = request.Age;
-
-            _dbContext.SaveChanges();
-
-            return Ok(student);
+            }
         }
 
-        [HttpPut("{id}/address")]
-        public ActionResult<Student> UpdateStudentAddress(int id,[FromBody] AddressDto request)
+        [HttpPut("update-student-address/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StudentWithAddress))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+        public IActionResult UpdateStudentAddress(int id, [FromBody] AddressDto request)
         {
-            var student = _dbContext.Students.Include( s => s.Address).FirstOrDefault(s => s.Id == id);
-            if (student == null)
+            try
             {
-                return NotFound();
+                var result = _studentService.UpdateStudentAddress(id, request);
+                return Ok(result);
             }
-
-            if(student.Address == null)
+            catch (Exception ex)
             {
-                var newAddress = new Address
-                {
-                    City = request.City,
-                    Street = request.Street,
-                    Number = request.Number,
-                };
+                return NotFound(ex.Message); 
 
-                _dbContext.Addresses.Add(newAddress);
-                student.Address = newAddress;
             }
-            else
-            {
-                student.Address.Street = request.Street;
-                student.Address.City = request.City;
-                student.Address.Number = request.Number;
-            }
-
-            _dbContext.SaveChanges();
-
-            var fullInformationsOfStudent = new StudentWithAddress
-            {
-                Name = student.Name,
-                FirstName = student.FirstName,
-                Address = student.Address == null ? null : new AddressDto
-                {
-                    City = student.Address.City,
-                    Street = student.Address.Street,
-                    Number = student.Address.Number,
-                }
-            };
-
-            return Ok(fullInformationsOfStudent);
         }
 
-        [HttpDelete("{id}")]
-        public ActionResult DeleteStudent(int id,[FromQuery] bool deleteAddress = false)
+        [HttpDelete("delete-student-and-address/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Student))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+        public ActionResult<Student> DeleteStudent(int studentId,[FromQuery] bool deleteAddress = false)
         {
-            var student = _dbContext.Students.Include(s => s.Address).FirstOrDefault(s => s.Id == id);
-            if (student == null)
+            try
             {
-                return NotFound();
+                _studentService.DeleteStudent(studentId, deleteAddress);
+                return Ok(new {message = $"Student with id {studentId} was successfully deleted!"});
             }
-
-            if (deleteAddress && student.Address != null)
+            catch (Exception ex)
             {
-                _dbContext.Addresses.Remove(student.Address);
+                return NotFound(ex.Message);
+
             }
-
-            _dbContext.Students.Remove(student);
-            _dbContext.SaveChanges();
-
-            return Ok(student);
-        }
-
-
-        [HttpDelete("{id}/address")]
-        public ActionResult DeleteStudentAddress(int id)
-        {
-
-            var student = _dbContext.Students.Include(s => s.Address).FirstOrDefault(s => s.Id == id);
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            if (student.Address == null)
-            {
-                return NotFound("Address not found for this student.");
-            }
-
-            _dbContext.Addresses.Remove(student.Address);
-            _dbContext.SaveChanges();
-
-            return Ok(student);
         }
     }
 }
