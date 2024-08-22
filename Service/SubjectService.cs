@@ -18,7 +18,7 @@ namespace Won7E1.Service
         /// </summary>
         /// <param name="request">The DTO containing the subject information</param>
         /// <returns>Return the new subject</returns>
-        public Subject CreateSubject(SubjectDto request)
+        public async Task<SubjectDto> CreateSubjectAsync(SubjectDto request)
         {
             var newSubject = new Subject
             {
@@ -26,9 +26,12 @@ namespace Won7E1.Service
             };
 
             _dataContext.Subjects.Add(newSubject);
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
 
-            return newSubject;
+            return new SubjectDto
+            {
+                Name = newSubject.Name
+            };
         }
     }
 }

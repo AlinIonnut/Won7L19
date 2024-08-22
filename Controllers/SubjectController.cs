@@ -18,9 +18,9 @@ namespace Won7E1.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SubjectDto))]
-        public IActionResult CreateSubject([FromBody]SubjectDto request)
+        public async Task<IActionResult> CreateSubject([FromBody]SubjectDto request)
         {
-            var subject = _subjectService.CreateSubject(request);
+            var subject = await _subjectService.CreateSubjectAsync(request);
             return Ok(subject);
         }
     }

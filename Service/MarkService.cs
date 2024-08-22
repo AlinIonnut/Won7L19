@@ -20,9 +20,9 @@ namespace Won7E1.Service
         /// <param name="request">The DTO containing the mark information</param>
         /// <returns>Returns the new mark</returns>
         /// <exception cref="Exception">Thrown if the student or subject does not exist</exception>
-        public Mark CreateMark(MarkDto request)
+        public async Task<Mark> CreateMarkAsync(MarkDto request)
         {
-            var studentExists = _dataContext.Students.Any(s => s.Id == request.StudentId);
+            var studentExists = await _dataContext.Students.AnyAsync(s => s.Id == request.StudentId);
             if (!studentExists)
             {
                 throw new Exception($"Student with ID {request.StudentId} does not exist.");
@@ -43,7 +43,7 @@ namespace Won7E1.Service
             };
 
             _dataContext.Marks.Add(newMark);
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
 
             return newMark;
         }
@@ -54,9 +54,9 @@ namespace Won7E1.Service
         /// <param name="id">The unique identifier used for student</param>
         /// <returns>Returns a list with all the marks for all the subjects</returns>
         /// <exception cref="Exception">Thrown if the student if not found or if no marks are found</exception>
-        public List<MarksForStudent> GetAllMarksForStudent(int id)
+        public async Task<List<MarksForStudent>> GetAllMarksForStudentAsync(int id)
         {
-            var studentExists = _dataContext.Students.Include(s => s.Mark).ThenInclude(m => m.Subject).FirstOrDefault(s => s.Id == id);
+            var studentExists = await _dataContext.Students.Include(s => s.Mark).ThenInclude(m => m.Subject).FirstOrDefaultAsync(s => s.Id == id);
             if(studentExists == null)
             {
                 throw new Exception($"The student with id {id} does not exist!");
@@ -86,9 +86,9 @@ namespace Won7E1.Service
         /// <param name="subjectId">The unique identifier used for subject</param>
         /// <returns>Return a list with all the marks</returns>
         /// <exception cref="Exception">Thrown if the student of the subject are not found</exception>
-        public List<MarksFromASubject> GetAllMarksFromASubject (int studentId, int subjectId)
+        public async Task<List<MarksFromASubject>> GetAllMarksFromASubjectAsync (int studentId, int subjectId)
         {
-            var studentExists = _dataContext.Students.Include(s => s.Mark).ThenInclude(m => m.Subject).FirstOrDefault(m => m.Id == studentId);
+            var studentExists = await _dataContext.Students.Include(s => s.Mark).ThenInclude(m => m.Subject).FirstOrDefaultAsync(m => m.Id == studentId);
 
             if (studentExists == null)
             {
@@ -120,10 +120,10 @@ namespace Won7E1.Service
         /// <param name="studentId">The unique identifier for the student</param>
         /// <returns>Returns a list with the average marks for all the subjects</returns>
         /// <exception cref="Exception">Thrown if the student or subjects are not found</exception>
-        public List<SubjectAverageDto> GetSubjectAverage (int studentId)
+        public async Task<List<SubjectAverageDto>> GetSubjectAverageAsync (int studentId)
         {
-           var  studentExists = _dataContext.Students.Include(m => m.Mark).ThenInclude(s => s.Subject)
-                .FirstOrDefault(m => m.Id == studentId);
+           var  studentExists = await _dataContext.Students.Include(m => m.Mark).ThenInclude(s => s.Subject)
+                .FirstOrDefaultAsync(m => m.Id == studentId);
 
             if(studentExists == null)
             {
@@ -152,9 +152,9 @@ namespace Won7E1.Service
         /// <param name="order">Order the list ascending (asc) or descending (desc)</param>
         /// <returns>Return a list with all of the students ordered based on the "order" value</returns>
         /// <exception cref="Exception">Thrown if no student was found in the list</exception>
-        public List<StudentsOrderByGrades> GetStudentsByGrades(string order = "asc")
+        public async Task<List<StudentsOrderByGrades>> GetStudentsByGradesAsync(string order = "asc")
         {
-            var studentsExists = _dataContext.Students.Include(s => s.Mark).ThenInclude(m => m.Subject).ToList();
+            var studentsExists = await _dataContext.Students.Include(s => s.Mark).ThenInclude(m => m.Subject).ToListAsync();
 
             if (!studentsExists.Any())
             {

@@ -23,11 +23,11 @@ namespace Won7E1.Controllers
         [HttpGet("get-all-students")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<Student>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-        public IActionResult GetAllStudents()
+        public async Task<IActionResult> GetAllStudents()
         {
             try
             {
-                var studentsList = _studentService.GetAllStudents();
+                var studentsList = await _studentService.GetAllStudentsAsync();
                 return Ok(studentsList);
             }
             catch(Exception ex)
@@ -39,11 +39,11 @@ namespace Won7E1.Controllers
         [HttpGet("get-student-by/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Student))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-        public IActionResult GetStudentById(int id)
+        public async Task<IActionResult> GetStudentById(int id)
         {
             try
             {
-                var student = _studentService.GetStudentById(id);
+                var student = await _studentService.GetStudentByIdAsync(id);
                 return Ok(student);
             }
             catch (Exception ex)
@@ -56,11 +56,11 @@ namespace Won7E1.Controllers
         [HttpGet("get-student-address-by/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AddressDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-        public IActionResult GetStudentByAddress(int id)
+        public async Task<IActionResult> GetStudentByAddress(int id)
         {
             try
             {
-                var address = _studentService.GetStudentByAdress(id);
+                var address = await _studentService.GetStudentByAdressAsync(id);
                 return Ok(address);
             }
             catch (Exception ex)
@@ -72,20 +72,20 @@ namespace Won7E1.Controllers
 
         [HttpPost("create-student-without-address")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Student))]
-        public IActionResult CreateStudentWithoutAdress([FromBody] StudentWithoutAddressDto request)
+        public async Task<IActionResult> CreateStudentWithoutAdress([FromBody] StudentWithoutAddressDto request)
         {
-            var student = _studentService.CreateStudentWithoutAdress(request);
+            var student = await _studentService.CreateStudentWithoutAdressAsync(request);
             return CreatedAtAction(nameof(GetStudentById), new { id = student.Id }, student);
         }
 
         [HttpPut("update-student/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Student))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-        public IActionResult UpdateStudent(int id,[FromBody] StudentWithoutAddressDto request)
+        public async Task<IActionResult> UpdateStudent(int id,[FromBody] StudentWithoutAddressDto request)
         {
             try
             {
-                var student = _studentService.UpdateStudent(id, request);
+                var student = await _studentService.UpdateStudentAsync(id, request);
                 return Ok(student);
             }
             catch (Exception ex)
@@ -98,11 +98,11 @@ namespace Won7E1.Controllers
         [HttpPut("update-student-address/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StudentWithAddress))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-        public IActionResult UpdateStudentAddress(int id, [FromBody] AddressDto request)
+        public async Task<IActionResult> UpdateStudentAddress(int id, [FromBody] AddressDto request)
         {
             try
             {
-                var result = _studentService.UpdateStudentAddress(id, request);
+                var result = await _studentService.UpdateStudentAddressAsync(id, request);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -115,11 +115,11 @@ namespace Won7E1.Controllers
         [HttpDelete("delete-student-and-address/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Student))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-        public ActionResult<Student> DeleteStudent(int studentId,[FromQuery] bool deleteAddress = false)
+        public async Task<ActionResult<Student>> DeleteStudent(int studentId,[FromQuery] bool deleteAddress = false)
         {
             try
             {
-                _studentService.DeleteStudent(studentId, deleteAddress);
+                await _studentService.DeleteStudentAsync(studentId, deleteAddress);
                 return Ok(new {message = $"Student with id {studentId} was successfully deleted!"});
             }
             catch (Exception ex)

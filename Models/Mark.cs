@@ -2,7 +2,7 @@
 {
     public class Mark
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
         public int Value { get; set; }
         public DateTime DateAssigned { get; set; }
         public int? StudentId { get; set; }

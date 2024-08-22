@@ -21,9 +21,9 @@ namespace Won7E1.Service
         /// </summary>
         /// <returns>Returns a list of students</returns>
         /// <exception cref="Exception">Thrown when the list of students is empty</exception>
-        public List<Student> GetAllStudents()
+        public async Task<List<Student>> GetAllStudentsAsync()
         {
-            var students = _dataContext.Students.ToList();
+            var students = await _dataContext.Students.ToListAsync();
 
             if (students == null)
             {
@@ -38,9 +38,9 @@ namespace Won7E1.Service
         /// <param name="id">The identifier</param>
         /// <returns>Returns the student if is found</returns>
         /// <exception cref="Exception">Thrown when no student with the specified ID is found</exception>
-        public Student GetStudentById(int id) 
+        public async Task<Student> GetStudentByIdAsync(int id) 
         {
-            var student = _dataContext.Students.FirstOrDefault(s => s.Id == id);
+            var student = await _dataContext.Students.FirstOrDefaultAsync(s => s.Id == id);
             if (student == null)
             {
                 throw new Exception($"The student with id {id} was not found!");
@@ -54,9 +54,9 @@ namespace Won7E1.Service
         /// <param name="id">The unique identifier</param>
         /// <returns>Returns the address of the student</returns>
         /// <exception cref="Exception">Thrown when the student or the address of the student are not found</exception>
-        public AddressDto GetStudentByAdress(int id)
+        public async Task<AddressDto> GetStudentByAdressAsync(int id)
         {
-            var student = _dataContext.Students.Include(s => s.Address).FirstOrDefault(s => s.Id == id);
+            var student = await _dataContext.Students.Include(s => s.Address).FirstOrDefaultAsync(s => s.Id == id);
             if (student == null)
             {
                 throw new Exception($"The student with id {id} was not found!");
@@ -82,7 +82,7 @@ namespace Won7E1.Service
         /// </summary>
         /// <param name="request">The DTO containing the student information</param>
         /// <returns>Returns the newly created student</returns>
-        public Student CreateStudentWithoutAdress(StudentWithoutAddressDto request)
+        public async Task<Student> CreateStudentWithoutAdressAsync(StudentWithoutAddressDto request)
         {
             var newStudent = new Student
             {
@@ -92,7 +92,7 @@ namespace Won7E1.Service
             };
 
             _dataContext.Students.Add(newStudent);
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
 
             return newStudent;
         }
@@ -104,9 +104,9 @@ namespace Won7E1.Service
         /// <param name="request">The DTO containing the student information</param>
         /// <returns>Return a new modified student object</returns>
         /// <exception cref="Exception">Thrown if the student is not found based on the unique identifier</exception>
-        public Student UpdateStudent(int id, StudentWithoutAddressDto request)
+        public async Task<Student> UpdateStudentAsync(int id, StudentWithoutAddressDto request)
         {
-            var student = _dataContext.Students.FirstOrDefault(s => s.Id == id);
+            var student = await _dataContext.Students.FirstOrDefaultAsync(s => s.Id == id);
             if (student == null)
             {
                 throw new Exception($"The student with id {id} was not found!");
@@ -116,7 +116,7 @@ namespace Won7E1.Service
             student.FirstName = request.FirstName;
             student.Age = request.Age;
 
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
 
             return student;
         }
@@ -128,9 +128,9 @@ namespace Won7E1.Service
         /// <param name="request">The DTO containing the address information</param>
         /// <returns>Retun a the new address</returns>
         /// <exception cref="Exception">Thrown if the student is not found based on the unique identifier</exception>
-        public StudentWithAddress UpdateStudentAddress(int id, AddressDto request)
+        public async Task<StudentWithAddress> UpdateStudentAddressAsync(int id, AddressDto request)
         {
-            var student = _dataContext.Students.Include(s => s.Address).FirstOrDefault(s => s.Id == id);
+            var student = await _dataContext.Students.Include(s => s.Address).FirstOrDefaultAsync(s => s.Id == id);
             if (student == null)
             {
                 throw new Exception($"The student with id {id} was not found!");
@@ -155,7 +155,7 @@ namespace Won7E1.Service
                 student.Address.Number = request.Number;
             }
 
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
 
             var fullInformationsOfStudent = new StudentWithAddress
             {
@@ -178,9 +178,9 @@ namespace Won7E1.Service
         /// <param name="studentId">The unique identifier used for student</param>
         /// <param name="deleteAddress">Choose if you want to delete the address too. It is set as false but if you want to delete the address you have to change it to "true"</param>
         /// <exception cref="Exception">Thrown if the student is not found based on the unique identifier</exception>
-        public void DeleteStudent(int studentId, bool deleteAddress = false)
+        public async Task<Student> DeleteStudentAsync(int studentId, bool deleteAddress = false)
         {
-            var studentExists = _dataContext.Students.Include(s => s.Address).Include(s => s.Mark).FirstOrDefault(s => s.Id == studentId);
+            var studentExists = await _dataContext.Students.Include(s => s.Address).Include(s => s.Mark).FirstOrDefaultAsync(s => s.Id == studentId);
             if (studentExists == null)
             {
                 throw new Exception($"The student with id {studentId} was not found!");
@@ -198,7 +198,9 @@ namespace Won7E1.Service
 
             _dataContext.Students.Remove(studentExists);
 
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
+
+            return studentExists;
         }
     }
 }
