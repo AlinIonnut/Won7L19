@@ -112,7 +112,7 @@ namespace Won7E1.Controllers
             }
         }
 
-        [HttpDelete("delete-student-and-address/{id}")]
+        [HttpDelete("delete-student-and-address/{studentId}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Student))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
         public async Task<ActionResult<Student>> DeleteStudent(int studentId,[FromQuery] bool deleteAddress = false)
